@@ -18,6 +18,14 @@ import "./globals.css";
 import { PaperProvider } from "react-native-paper";
 import Timer from "@/components/Timer";
 import { useEffect, useRef, useState } from "react";
+import SettingModal from "@/components/SettingModal";
+
+interface PomodoroPattern {
+	focusTime: number;
+	shortBreakTime: number;
+	longBreakTime: number;
+	intervals: number;
+}
 
 export default function Index() {
 	const [timerInput, setTimerInput] = useState("");
@@ -25,13 +33,30 @@ export default function Index() {
 	const [timerState, setTimerState] = useState<"running" | "paused" | "idle">(
 		"idle"
 	);
+
+	const [pomodoroPattern, setPomodoroPattern] = useState<PomodoroPattern>({
+		focusTime: 25,
+		// focusTime: 25 * 60 * 1000,
+		shortBreakTime: 5,
+		// shortBreakTime: 5 * 60 * 1000,
+		longBreakTime: 15,
+		// longBreakTime: 15 * 60 * 1000,
+		intervals: 3,
+	});
+
+	const [currentInterval, setCurrentInterval] = useState(0);
+	const [currentState, setCurrentState] = useState<
+		"focus" | "shortBreak" | "longBreak"
+	>("focus");
+	const [settingModalVisible, setSettingModalVisible] = useState(false);
+
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const onStart = () => {
 		if (timerRef.current) {
 			clearInterval(timerRef.current);
 		}
-		setTimer(Number(timerInput) * 1000);
+		setTimer(Number(pomodoroPattern.focusTime) * 1000);
 		setTimerState("running");
 		timerRef.current = setInterval(() => {
 			setTimer((prev) => prev - 1000);
@@ -67,6 +92,25 @@ export default function Index() {
 		setTimerState("idle");
 	};
 
+	const toggleSettingModalVisibility = () => {
+		setSettingModalVisible(!settingModalVisible);
+	};
+
+	const onPomodoroPatternChange = (
+		keyToChange: "focusTime" | "shortBreakTime" | "longBreakTime" | "intervals",
+		newVal: string
+	) => {
+		let newFormattedValue = Number(newVal);
+		if (keyToChange !== "intervals") {
+			newFormattedValue = newFormattedValue;
+			// newFormattedValue = newFormattedValue * 60 * 1000;
+		}
+		setPomodoroPattern((prevPattern) => ({
+			...prevPattern,
+			[keyToChange]: newFormattedValue,
+		}));
+	};
+
 	useEffect(() => {
 		return () => {
 			if (timerRef.current) {
@@ -84,16 +128,119 @@ export default function Index() {
 		}
 	}, [timer]);
 
+	useEffect(() => {
+		console.log({ pomodoroPattern });
+	}, [pomodoroPattern]);
+
 	return (
 		<SafeAreaView className="flex-1">
+			<SettingModal
+				visible={settingModalVisible}
+				onRequestClose={toggleSettingModalVisibility}
+			>
+				<View className=" gap-y-2">
+					<View className="flex-row justify-between items-center">
+						<Text>Focus Time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							// placeholder="Focus time"
+							value={pomodoroPattern.focusTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("focusTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Short break time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="Short break time"
+							value={pomodoroPattern.shortBreakTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("shortBreakTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Long break time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="Long break time"
+							value={pomodoroPattern.longBreakTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("longBreakTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Intervals</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="intervals"
+							value={pomodoroPattern.intervals.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("intervals", text)
+							}
+						/>
+					</View>
+				</View>
+			</SettingModal>
+			<Button title="Change Setting" onPress={toggleSettingModalVisibility} />
 			{timerState === "idle" ? (
-				<TextInput
-					className="bg-red-50"
-					keyboardType="numeric"
-					placeholder="seconds"
-					value={timerInput}
-					onChangeText={(text) => setTimerInput(text)}
-				/>
+				<View className=" gap-y-2">
+					<View className="flex-row justify-between items-center">
+						<Text>Focus Time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							// placeholder="Focus time"
+							value={pomodoroPattern.focusTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("focusTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Short break time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="Short break time"
+							value={pomodoroPattern.shortBreakTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("shortBreakTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Long break time</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="Long break time"
+							value={pomodoroPattern.longBreakTime.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("longBreakTime", text)
+							}
+						/>
+					</View>
+					<View className="flex-row justify-between items-center">
+						<Text>Intervals</Text>
+						<TextInput
+							className="inline-inputs"
+							keyboardType="numeric"
+							placeholder="intervals"
+							value={pomodoroPattern.intervals.toString()}
+							onChangeText={(text) =>
+								onPomodoroPatternChange("intervals", text)
+							}
+						/>
+					</View>
+				</View>
 			) : (
 				<View>
 					<Text>{timerInput}</Text>
