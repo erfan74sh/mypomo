@@ -1,16 +1,18 @@
 import { View, Text } from "react-native";
 import React, { useRef } from "react";
+import { formatTime } from "@/utils/formatTime";
 
 interface TimerProps {
-	initialTimer: number;
+	remainingTime: number;
 }
 
-const Timer = ({ initialTimer }: TimerProps) => {
-	const timerId = useRef();
-
+const Timer = ({ remainingTime }: TimerProps) => {
+	const [minutes, seconds] = formatTime(remainingTime);
 	return (
-		<View>
-			<Text>Timer</Text>
+		<View className="flex-row items-center justify-center gap-x-2">
+			<Text className="text-7xl font-bold ">{minutes}</Text>
+			<Text className="text-2xl font-bold">:</Text>
+			<Text className="text-7xl font-bold ">{seconds}</Text>
 		</View>
 	);
 };
