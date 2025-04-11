@@ -1,5 +1,6 @@
 import { create } from "zustand";
-
+import { createJSONStorage, persist } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export interface PomodoroPattern {
 	focusTime: number;
 	shortBreakTime: number;
@@ -9,33 +10,29 @@ export interface PomodoroPattern {
 
 interface State {
 	pomodoroPattern: PomodoroPattern;
-	// currentInterval: number;
-	// currentState: "focus" | "shortBreak" | "longBreak";
-	// timer: number;
-	// timerState: "running" | "paused" | "idle";
 }
 
 interface Actions {
 	setPomodoroPattern: (pattern: PomodoroPattern) => void;
-	// setCurrentInterval: (interval: number) => void;
-	// setCurrentState: (state: "focus" | "shortBreak" | "longBreak") => void;
-	// setTimer: (time: number) => void;
-	// setTimerState: (state: "running" | "paused" | "idle") => void;
 }
 
-const useConfigStore = create<State & Actions>()((set) => ({
-	pomodoroPattern: {
-		focusTime: 5,
-		shortBreakTime: 3,
-		longBreakTime: 8,
-		intervals: 3,
-	},
-	// currentInterval: 0,
-	// currentState: "focus",
-	// timer: 0,
-	// timerState: "idle",
-	setPomodoroPattern: (pattern: PomodoroPattern) =>
-		set({ pomodoroPattern: pattern }),
-}));
+const useConfigStore = create<State & Actions>()(
+	persist(
+		(set) => ({
+			pomodoroPattern: {
+				focusTime: 25 * 60,
+				shortBreakTime: 5 * 60,
+				longBreakTime: 15 * 60,
+				intervals: 3,
+			},
 
+			setPomodoroPattern: (pattern: PomodoroPattern) =>
+				set({ pomodoroPattern: { ...pattern } }),
+		}),
+		{
+			name: "pomodoro-pattern-storage",
+			storage: createJSONStorage(() => AsyncStorage),
+		}
+	)
+);
 export default useConfigStore;
