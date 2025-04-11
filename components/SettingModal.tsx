@@ -19,9 +19,9 @@ const SettingModal = ({
 	);
 
 	const [pomodoroPatternInput, setPomodoroPatternInput] = React.useState({
-		focusTime: pomodoroPattern.focusTime,
-		shortBreakTime: pomodoroPattern.shortBreakTime,
-		longBreakTime: pomodoroPattern.longBreakTime,
+		focusTime: pomodoroPattern.focusTime / 60,
+		shortBreakTime: pomodoroPattern.shortBreakTime / 60,
+		longBreakTime: pomodoroPattern.longBreakTime / 60,
 		intervals: pomodoroPattern.intervals,
 	});
 
@@ -32,7 +32,6 @@ const SettingModal = ({
 		let newFormattedValue = Number(newVal);
 		if (keyToChange !== "intervals") {
 			newFormattedValue = newFormattedValue;
-			// newFormattedValue = newFormattedValue * 60 * 1000;
 		}
 		setPomodoroPatternInput((prevPattern) => ({
 			...prevPattern,
@@ -41,7 +40,13 @@ const SettingModal = ({
 	};
 
 	const onSaveChanges = () => {
-		setPomodoroPattern(pomodoroPatternInput);
+		const formatedObj = {
+			focusTime: pomodoroPatternInput.focusTime * 60,
+			shortBreakTime: pomodoroPatternInput.shortBreakTime * 60,
+			longBreakTime: pomodoroPatternInput.longBreakTime * 60,
+			intervals: pomodoroPatternInput.intervals,
+		};
+		setPomodoroPattern(formatedObj);
 		onRequestClose();
 	};
 
