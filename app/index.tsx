@@ -4,6 +4,7 @@ import {
 	Alert,
 	AppState,
 	Button,
+	Modal,
 	Platform,
 	SafeAreaView,
 	StatusBar,
@@ -37,6 +38,7 @@ import {
 	requestNotificationPermissions,
 	schedulePomodoroNotification,
 } from "@/utils/notifications";
+import usePomodoroTimer from "@/hooks/usePomodoroTimer";
 
 const startForSchedule = async (durationMinute: number) => {
 	const now = new Date();
@@ -66,134 +68,38 @@ const cancelNotificationHandler = async () => {
 };
 
 export default function Index() {
-	const [timerInput, setTimerInput] = useState("");
-	const [timerState, setTimerState] = useState<"running" | "paused" | "idle">(
-		"idle"
-	);
 	const appState = useRef(AppState.currentState);
 	const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
+	const {
+		timerState,
+		currentState,
+		currentInterval,
+		remainingTime,
+		showCycleCompleteModal,
+		start,
+		pause,
+		resume,
+		reset,
+		startNextCycle,
+		setRemainingTime,
+	} = usePomodoroTimer();
+
 	const pomodoroPattern = useConfigStore((store) => store.pomodoroPattern);
 
-	const [currentInterval, setCurrentInterval] = useState(1);
-	const [currentState, setCurrentState] = useState<
-		"focus" | "shortBreak" | "longBreak"
-	>("focus");
-
-	const [remainingTime, setRemainingTime] = useState(
-		Number(pomodoroPattern.focusTime)
-	);
-
 	const [settingModalVisible, setSettingModalVisible] = useState(false);
-
-	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-	const setTimerBasedOnState = () => {
-		switch (currentState) {
-			case "focus":
-				setRemainingTime(Number(pomodoroPattern.focusTime));
-				break;
-			case "shortBreak":
-				setRemainingTime(Number(pomodoroPattern.shortBreakTime));
-				break;
-			case "longBreak":
-				setRemainingTime(Number(pomodoroPattern.longBreakTime));
-				break;
-		}
-	};
-
-	const setNextState = () => {
-		if (currentState === "focus") {
-			if (currentInterval >= pomodoroPattern.intervals) {
-				setCurrentState("longBreak");
-			} else {
-				setCurrentState("shortBreak");
-			}
-		} else if (currentState === "shortBreak") {
-			setCurrentState("focus");
-			setCurrentInterval((prev) => prev + 1);
-		} else if (currentState === "longBreak") {
-			Alert.alert(
-				"Pomodoro Complete",
-				"Congratulations! You've completed your pomodoro session.",
-				[
-					{
-						text: "OK",
-						onPress: () => {
-							setCurrentState("focus");
-							setCurrentInterval(1);
-						},
-					},
-				]
-			);
-		}
-	};
-
-	const onStart = () => {
-		if (timerRef.current) {
-			clearInterval(timerRef.current);
-		}
-		setTimerState("running");
-		startForSchedule(remainingTime / 60);
-		timerRef.current = setInterval(() => {
-			setRemainingTime((prev) => prev - 1);
-		}, 1000);
-	};
-
-	const onPause = async () => {
-		if (timerRef.current) {
-			clearInterval(timerRef.current);
-			timerRef.current = null;
-			await cancelNotificationHandler();
-			useTimerStore.getState().clearTimer();
-			setTimerState("paused");
-		}
-	};
-
-	const onResume = () => {
-		if (!timerRef.current && remainingTime > 0) {
-			timerRef.current = setInterval(() => {
-				setRemainingTime((prev) => prev - 1);
-			}, 1000);
-			setTimerState("running");
-			startForSchedule(remainingTime / 60);
-		} else {
-			console.log("no remainingTime found");
-		}
-	};
-
-	const onReset = async () => {
-		if (timerRef.current) {
-			clearInterval(timerRef.current);
-			timerRef.current = null;
-		}
-		setRemainingTime(pomodoroPattern.focusTime);
-		setCurrentInterval(1);
-		setCurrentState("focus");
-		setTimerState("idle");
-
-		await cancelNotificationHandler();
-		useTimerStore.getState().clearTimer();
-	};
 
 	const toggleSettingModalVisibility = () => {
 		setSettingModalVisible(!settingModalVisible);
 	};
 
-	useEffect(() => {
-		return () => {
-			if (timerRef.current) {
-				clearInterval(timerRef.current);
-			}
-		};
-	}, []);
-
-	useEffect(() => {
-		(async () => {
-			const remainigNotifs = await getNotifications();
-			console.log({ remainigNotifs });
-		})();
-	});
+	// useEffect(() => {
+	// 	return () => {
+	// 		if (timerRef.current) {
+	// 			clearInterval(timerRef.current);
+	// 		}
+	// 	};
+	// }, []);
 
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", (nextAppState) => {
@@ -206,7 +112,7 @@ export default function Index() {
 
 			appState.current = nextAppState;
 			setAppStateVisible(appState.current);
-			console.log("AppState", appState.current);
+			// console.log("AppState", appState.current);
 		});
 
 		return () => {
@@ -229,21 +135,38 @@ export default function Index() {
 		})();
 	}, []);
 
-	useEffect(() => {
-		if (remainingTime <= 0 && timerRef.current) {
-			Vibration.vibrate();
-			clearInterval(timerRef.current);
-			setTimerState("idle");
-			setNextState();
-		}
-	}, [remainingTime]);
-
-	useEffect(() => {
-		setTimerBasedOnState();
-	}, [currentState, pomodoroPattern]);
-
 	return (
 		<SafeAreaView className="flex-1">
+			{showCycleCompleteModal && (
+				<Modal transparent animationType="fade" visible={true}>
+					<View className="flex-1 justify-center items-center bg-black/50">
+						<View className="bg-white p-6 rounded-lg gap-y-3">
+							<Text className="text-lg font-bold text-center">
+								🎉 Cycle Complete!
+							</Text>
+							<Text className="text-center">
+								Would you like to start a new cycle?
+							</Text>
+							<View className="mt-4 gap-y-2">
+								<TouchableOpacity
+									className="bg-sky-500 py-3 px-4 rounded-md"
+									onPress={startNextCycle}
+								>
+									<Text className="text-white text-center font-semibold">
+										Start Next Cycle
+									</Text>
+								</TouchableOpacity>
+								<TouchableOpacity
+									className="bg-slate-300 py-3 px-4 rounded-md"
+									onPress={reset}
+								>
+									<Text className="text-center font-semibold">Reset</Text>
+								</TouchableOpacity>
+							</View>
+						</View>
+					</View>
+				</Modal>
+			)}
 			<SettingModal
 				visible={settingModalVisible}
 				onRequestClose={toggleSettingModalVisibility}
@@ -274,7 +197,7 @@ export default function Index() {
 			<View className="absolute bottom-4 w-full px-10">
 				{timerState === "idle" ? (
 					<TouchableOpacity
-						onPress={onStart}
+						onPress={start}
 						className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 					>
 						<CirclePlay color="#000" />
@@ -283,7 +206,7 @@ export default function Index() {
 				) : (
 					<View className="flex-col gap-y-1">
 						<TouchableOpacity
-							onPress={onReset}
+							onPress={reset}
 							className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 						>
 							<CircleStop color="#000" />
@@ -291,7 +214,7 @@ export default function Index() {
 						</TouchableOpacity>
 						{timerState === "running" ? (
 							<TouchableOpacity
-								onPress={onPause}
+								onPress={pause}
 								className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 							>
 								<CirclePause color="#000" />
@@ -299,7 +222,7 @@ export default function Index() {
 							</TouchableOpacity>
 						) : (
 							<TouchableOpacity
-								onPress={onResume}
+								onPress={resume}
 								className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 							>
 								<CirclePlay color="#000" />
