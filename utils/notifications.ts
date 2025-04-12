@@ -5,8 +5,8 @@ import * as Linking from "expo-linking";
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
 		shouldShowAlert: true,
-		shouldPlaySound: true,
-		shouldSetBadge: true,
+		shouldPlaySound: false,
+		shouldSetBadge: false,
 	}),
 });
 
@@ -15,7 +15,7 @@ export async function schedulePomodoroNotification(endTime: Date) {
 	const notificationId = await Notifications.scheduleNotificationAsync({
 		content: {
 			title: "Pomodoro Timer",
-			body: "Your Pomodoro session has ended!",
+			body: "The timer has ended!",
 			data: { type: "pomodoro" },
 		},
 		trigger: {
