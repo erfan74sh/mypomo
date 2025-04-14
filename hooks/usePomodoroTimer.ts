@@ -60,6 +60,21 @@ const usePomodoroTimer = () => {
 		setTimerState("paused");
 	};
 
+	const skip = async () => {
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+		await cancel();
+		setTimerState("idle");
+
+		if (currentState === "longBreak") {
+			setShowCycleCompleteModal(true);
+		} else {
+			goToNextPhase();
+		}
+	};
+
 	// Resume Timer
 	const resume = async () => {
 		if (!timerRef.current && remainingTime > 0) {
@@ -86,6 +101,7 @@ const usePomodoroTimer = () => {
 		setCurrentState("focus");
 		setCurrentInterval(1);
 		resetDuration();
+		setShowCycleCompleteModal(false);
 	};
 
 	// Cancel Notification
@@ -105,9 +121,9 @@ const usePomodoroTimer = () => {
 			setTimerState("idle");
 
 			if (currentState === "longBreak") {
-				setShowCycleCompleteModal(true); // ✅ show modal here
+				setShowCycleCompleteModal(true);
 			} else {
-				goToNextPhase(); // ✅ keep this focused
+				goToNextPhase();
 			}
 		}
 	}, [remainingTime]);
@@ -161,7 +177,9 @@ const usePomodoroTimer = () => {
 		pause,
 		resume,
 		reset,
+		skip,
 		startNextCycle,
+		setShowCycleCompleteModal,
 	};
 };
 
