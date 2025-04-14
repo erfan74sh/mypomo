@@ -1,4 +1,5 @@
 import Focus from "@/components/Focus";
+import * as Font from "expo-font";
 import { colors } from "@/utils/colors";
 import {
 	Alert,
@@ -32,21 +33,9 @@ import {
 	Settings,
 } from "lucide-react-native";
 import { useTimerStore } from "@/stores/timerStore";
-import {
-	cancelPomodoroNotification,
-	getNotifications,
-	requestNotificationPermissions,
-	schedulePomodoroNotification,
-} from "@/utils/notifications";
+import { requestNotificationPermissions } from "@/utils/notifications";
 import usePomodoroTimer from "@/hooks/usePomodoroTimer";
-
-const startForSchedule = async (durationMinute: number) => {
-	const now = new Date();
-	const end = new Date(now.getTime() + durationMinute * 60 * 1000);
-	const notifId = await schedulePomodoroNotification(end);
-	console.log({ notifId });
-	useTimerStore.getState().setTimer(now.toISOString(), durationMinute, notifId);
-};
+import StateTracker from "@/components/StateTracler";
 
 const getRemainingTime = (): number => {
 	const { startTime, duration } = useTimerStore.getState();
@@ -57,14 +46,6 @@ const getRemainingTime = (): number => {
 
 	const remaining = start + durationMs - now;
 	return Math.max(remaining, 0);
-};
-
-const cancelNotificationHandler = async () => {
-	const notificationId = useTimerStore.getState().notificationId;
-	console.log({ notificationId });
-	if (notificationId) {
-		await cancelPomodoroNotification(notificationId);
-	}
 };
 
 export default function Index() {
@@ -81,6 +62,7 @@ export default function Index() {
 		pause,
 		resume,
 		reset,
+		skip,
 		startNextCycle,
 		setRemainingTime,
 	} = usePomodoroTimer();
@@ -93,26 +75,14 @@ export default function Index() {
 		setSettingModalVisible(!settingModalVisible);
 	};
 
-	// useEffect(() => {
-	// 	return () => {
-	// 		if (timerRef.current) {
-	// 			clearInterval(timerRef.current);
-	// 		}
-	// 	};
-	// }, []);
-
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", (nextAppState) => {
 			if (
 				appState.current.match(/inactive|background/) &&
 				nextAppState === "active"
-			) {
-				console.log("App has come to the foreground!");
-			}
-
-			appState.current = nextAppState;
+			)
+				appState.current = nextAppState;
 			setAppStateVisible(appState.current);
-			// console.log("AppState", appState.current);
 		});
 
 		return () => {
@@ -121,10 +91,8 @@ export default function Index() {
 	}, []);
 
 	useEffect(() => {
-		console.log({ appStateVisible });
 		if (appStateVisible === "active" && timerState === "running") {
 			const remaining = getRemainingTime();
-			console.log({ remaining });
 			setRemainingTime(remaining / 1000);
 		}
 	}, [appStateVisible]);
@@ -183,14 +151,16 @@ export default function Index() {
 				</View>
 				<View className="flex-col gap-y-6 my-auto">
 					<View className="flex flex-row gap-x-2 items-center justify-center">
-						<Text className="bg-sky-500 px-2 py-1.5 rounded-md text-center align-middle">
+						<StateTracker currentState={currentState} />
+						{/* <Text className="bg-sky-500 px-2 py-1.5 rounded-md text-center align-middle">
 							{currentState}
-						</Text>
+						</Text> */}
 					</View>
 					<Timer remainingTime={remainingTime} />
 					<IntervalTracker
 						totalIntervals={pomodoroPattern.intervals}
 						currentInterval={currentInterval}
+						curentState={currentState}
 					/>
 				</View>
 			</View>
@@ -211,6 +181,13 @@ export default function Index() {
 						>
 							<CircleStop color="#000" />
 							<Text className="font-semibold">Reset</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={skip}
+							className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+						>
+							<CircleStop color="#000" />
+							<Text className="font-semibold">Skip</Text>
 						</TouchableOpacity>
 						{timerState === "running" ? (
 							<TouchableOpacity
