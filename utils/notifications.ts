@@ -11,7 +11,6 @@ Notifications.setNotificationHandler({
 });
 
 export async function schedulePomodoroNotification(endTime: Date) {
-	console.log({ endTime });
 	const notificationId = await Notifications.scheduleNotificationAsync({
 		content: {
 			title: "Pomodoro Timer",
@@ -23,7 +22,6 @@ export async function schedulePomodoroNotification(endTime: Date) {
 			type: Notifications.SchedulableTriggerInputTypes.DATE,
 		},
 	});
-	console.log("notificationId", notificationId);
 	return notificationId;
 }
 
