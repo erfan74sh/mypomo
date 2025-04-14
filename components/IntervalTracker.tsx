@@ -1,23 +1,66 @@
 import { View, Text } from "react-native";
-import React from "react";
+import React, { Fragment } from "react";
 
 interface Props {
 	totalIntervals: number;
 	currentInterval: number;
+	curentState: "focus" | "shortBreak" | "longBreak";
 }
 
-const IntervalTracker = ({ totalIntervals, currentInterval }: Props) => {
+const IntervalTracker = ({
+	totalIntervals,
+	currentInterval,
+	curentState,
+}: Props) => {
+	const generateTrackerState = (interval: number, state: 0 | 1) => {
+		if (interval < currentInterval) {
+			return "finished";
+		} else if (interval === currentInterval) {
+			if (curentState === "focus") {
+				if (state === 0) {
+					return "active";
+				} else {
+					return "none";
+				}
+			} else {
+				if (state === 0) {
+					return "finished";
+				} else {
+					return "active";
+				}
+			}
+		} else {
+			return "none";
+		}
+	};
+
 	return (
 		<View className="flex-row items-center justify-center gap-x-2">
 			{Array.from({ length: totalIntervals }, (_, index) => (
-				<View
-					key={index}
-					className={`w-4 h-4 rounded-full border-2 ${
-						index < currentInterval - 1 ? "bg-sky-500" : "bg-gray-300"
-					} ${
-						index <= currentInterval - 1 ? "border-sky-500" : "border-gray-300"
-					}`}
-				/>
+				<Fragment key={index}>
+					<View
+						className={`w-6 h-6 rounded-full border-2 ${
+							generateTrackerState(index + 1, 0) === "finished"
+								? "bg-sky-500"
+								: "bg-gray-300"
+						} ${
+							generateTrackerState(index + 1, 0) === "none"
+								? "border-gray-300"
+								: "border-sky-500"
+						}`}
+					/>
+					<View
+						className={`w-3 h-3 rounded-full border-2 ${
+							generateTrackerState(index + 1, 1) === "finished"
+								? "bg-sky-500"
+								: "bg-gray-300"
+						} ${
+							generateTrackerState(index + 1, 1) === "none"
+								? "border-gray-300"
+								: "border-sky-500"
+						}`}
+					/>
+				</Fragment>
 			))}
 		</View>
 	);
