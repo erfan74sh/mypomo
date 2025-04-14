@@ -35,7 +35,7 @@ import {
 import { useTimerStore } from "@/stores/timerStore";
 import { requestNotificationPermissions } from "@/utils/notifications";
 import usePomodoroTimer from "@/hooks/usePomodoroTimer";
-import StateTracker from "@/components/StateTracler";
+import StateTracker from "@/components/StateTracker";
 
 const getRemainingTime = (): number => {
 	const { startTime, duration } = useTimerStore.getState();
