@@ -141,6 +141,15 @@ const usePomodoroTimer = () => {
 		await start(); // start next cycle right away
 	};
 
+	// Time interval clean up
+	useEffect(() => {
+		return () => {
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+			}
+		};
+	}, []);
+
 	return {
 		timerState,
 		currentState,
