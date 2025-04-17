@@ -21,7 +21,6 @@ import useConfigStore from "@/stores/useConfigStore";
 import IntervalTracker from "@/components/IntervalTracker";
 import StateTracker from "@/components/StateTracker";
 import { useTimerStore } from "@/stores/timerStore";
-import { requestNotificationPermissions } from "@/utils/notifications";
 import usePomodoroTimer from "@/hooks/usePomodoroTimer";
 import "./globals.css";
 
@@ -102,12 +101,6 @@ export default function Index() {
 			setRemainingTime(remaining / 1000);
 		}
 	}, [appStateVisible]);
-
-	useEffect(() => {
-		(async () => {
-			await requestNotificationPermissions();
-		})();
-	}, []);
 
 	return (
 		<SafeAreaView className="flex-1">

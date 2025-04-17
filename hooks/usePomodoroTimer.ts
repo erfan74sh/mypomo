@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Vibration } from "react-native";
 import useConfigStore from "@/stores/useConfigStore";
 import { useTimerStore } from "@/stores/timerStore";
-import {
-	cancelPomodoroNotification,
-	schedulePomodoroNotification,
-} from "@/utils/notifications";
 
 type TimerState = "idle" | "running" | "paused";
 type PomodoroPhase = "focus" | "shortBreak" | "longBreak";
@@ -44,7 +39,8 @@ const usePomodoroTimer = () => {
 		const now = new Date();
 		const end = new Date(now.getTime() + remainingTime * 1000);
 
-		const notifId = await schedulePomodoroNotification(end);
+		const notifId = "";
+		// const notifId = await schedulePomodoroNotification(end);
 		setTimer(now.toISOString(), remainingTime / 60, notifId);
 
 		timerRef.current = setInterval(() => {
@@ -83,7 +79,8 @@ const usePomodoroTimer = () => {
 			setTimerState("running");
 			const now = new Date();
 			const end = new Date(now.getTime() + remainingTime * 1000);
-			const notifId = await schedulePomodoroNotification(end);
+			const notifId = "";
+			// const notifId = await schedulePomodoroNotification(end);
 			setTimer(now.toISOString(), remainingTime / 60, notifId);
 
 			timerRef.current = setInterval(() => {
@@ -109,7 +106,7 @@ const usePomodoroTimer = () => {
 	// Cancel Notification
 	const cancel = async () => {
 		if (notificationId) {
-			await cancelPomodoroNotification(notificationId);
+			// await cancelPomodoroNotification(notificationId);
 			clearTimer();
 		}
 	};
@@ -119,9 +116,7 @@ const usePomodoroTimer = () => {
 		if (remainingTime <= 0 && timerRef.current) {
 			clearInterval(timerRef.current);
 			timerRef.current = null;
-			Vibration.vibrate();
 			setTimerState("idle");
-
 			if (currentState === "longBreak") {
 				setShowCycleCompleteModal(true);
 			} else {

@@ -3,6 +3,7 @@
 		"name": "mypomo",
 		"slug": "mypomo",
 		"version": "1.0.0",
+		"scheme": "myapp",
 		"orientation": "portrait",
 		"icon": "./assets/images/icon.png",
 		"userInterfaceStyle": "automatic",
