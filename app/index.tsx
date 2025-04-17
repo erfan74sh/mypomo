@@ -1,41 +1,29 @@
-import Focus from "@/components/Focus";
-import * as Font from "expo-font";
-import { colors } from "@/utils/colors";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-	Alert,
 	AppState,
-	Button,
 	Modal,
-	Platform,
 	SafeAreaView,
-	StatusBar,
-	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
-	Vibration,
 	View,
 } from "react-native";
-
-import "./globals.css";
-
-import { PaperProvider } from "react-native-paper";
+import {
+	AlarmClock,
+	Pause,
+	Play,
+	RotateCcw,
+	Settings,
+	SkipForward,
+} from "lucide-react-native";
 import Timer from "@/components/Timer";
-import { useEffect, useRef, useState } from "react";
 import SettingModal from "@/components/SettingModal";
 import useConfigStore from "@/stores/useConfigStore";
 import IntervalTracker from "@/components/IntervalTracker";
-import {
-	CirclePause,
-	CirclePlay,
-	CircleStop,
-	Play,
-	Settings,
-} from "lucide-react-native";
+import StateTracker from "@/components/StateTracker";
 import { useTimerStore } from "@/stores/timerStore";
 import { requestNotificationPermissions } from "@/utils/notifications";
 import usePomodoroTimer from "@/hooks/usePomodoroTimer";
-import StateTracker from "@/components/StateTracker";
+import "./globals.css";
 
 const getRemainingTime = (): number => {
 	const { startTime, duration } = useTimerStore.getState();
@@ -51,7 +39,6 @@ const getRemainingTime = (): number => {
 export default function Index() {
 	const appState = useRef(AppState.currentState);
 	const [appStateVisible, setAppStateVisible] = useState(appState.current);
-
 	const {
 		timerState,
 		currentState,
@@ -67,7 +54,38 @@ export default function Index() {
 		setRemainingTime,
 	} = usePomodoroTimer();
 
-	const pomodoroPattern = useConfigStore((store) => store.pomodoroPattern);
+	const startTime = useTimerStore((state) => state.startTime);
+	const duration = useTimerStore((state) => state.duration);
+
+	const endTime = useMemo(() => {
+		console.log("calculating", { startTime, duration });
+		if (startTime && duration) {
+			const start = new Date(startTime).getTime();
+			const durationMs = duration * 60 * 1000;
+			const end = start + durationMs;
+			console.log(
+				"end: ",
+				new Date(end).toLocaleTimeString(undefined, {
+					timeStyle: "medium",
+					hour12: false,
+				})
+			);
+			return new Date(end).toLocaleTimeString(undefined, {
+				timeStyle: "medium",
+				hour12: false,
+			});
+		}
+		return null;
+	}, [startTime, duration, currentState]);
+
+	const hasSessionStarted = useMemo(() => {
+		return (
+			timerState !== "idle" || currentState !== "focus" || currentInterval !== 1
+		);
+	}, [timerState, currentState, currentInterval]);
+
+	// const pomodoroPattern = useConfigStore((store) => store.pomodoroPattern);
+	const intervals = useConfigStore((store) => store.intervals);
 
 	const [settingModalVisible, setSettingModalVisible] = useState(false);
 
@@ -77,11 +95,7 @@ export default function Index() {
 
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", (nextAppState) => {
-			if (
-				appState.current.match(/inactive|background/) &&
-				nextAppState === "active"
-			)
-				appState.current = nextAppState;
+			appState.current = nextAppState;
 			setAppStateVisible(appState.current);
 		});
 
@@ -117,7 +131,7 @@ export default function Index() {
 							</Text>
 							<View className="mt-4 gap-y-2">
 								<TouchableOpacity
-									className="bg-sky-500 py-3 px-4 rounded-md"
+									className="bg-sky-700 py-3 px-4 rounded-md"
 									onPress={startNextCycle}
 								>
 									<Text className="text-white text-center font-semibold">
@@ -140,74 +154,95 @@ export default function Index() {
 				onRequestClose={toggleSettingModalVisibility}
 			/>
 			<View className="flex-1 justify-center bg-slate-100">
-				<View className="absolute top-4 right-4">
-					<TouchableOpacity
-						accessibilityLabel="Change Setting"
-						onPress={toggleSettingModalVisibility}
-						className=" bg-slate-200 p-2 rounded-md"
-					>
-						<Settings color="#000" />
-					</TouchableOpacity>
-				</View>
-				<View className="flex-col gap-y-6 my-auto">
-					<View className="flex flex-row gap-x-2 items-center justify-center">
-						<StateTracker currentState={currentState} />
-						{/* <Text className="bg-sky-500 px-2 py-1.5 rounded-md text-center align-middle">
-							{currentState}
-						</Text> */}
+				{timerState === "idle" ? (
+					<View className="absolute top-4 right-4">
+						<TouchableOpacity
+							accessibilityLabel="Change Setting"
+							onPress={toggleSettingModalVisibility}
+							className=" bg-slate-200 p-2 rounded-md"
+							disabled={timerState !== "idle"}
+						>
+							<Settings color="#374151" />
+						</TouchableOpacity>
 					</View>
-					<Timer remainingTime={remainingTime} />
-					<IntervalTracker
-						totalIntervals={pomodoroPattern.intervals}
-						currentInterval={currentInterval}
-						curentState={currentState}
-					/>
+				) : null}
+
+				<View className="flex-col gap-y-7 my-auto">
+					<View className="min-h-16">
+						{hasSessionStarted && <StateTracker currentState={currentState} />}
+					</View>
+					<View className="">
+						<Timer remainingTime={remainingTime} />
+					</View>
+					<View className="-mt-8 flex-row items-center gap-x-2 justify-center">
+						{timerState !== "idle" && endTime && endTime !== "Invalid Date" ? (
+							<AlarmClock color="#6b7280" size={16} />
+						) : (
+							""
+						)}
+						<Text className="text-center text-gray-500">
+							{timerState !== "idle" && endTime && endTime !== "Invalid Date"
+								? endTime
+								: ""}
+						</Text>
+					</View>
+					<View className="">
+						<IntervalTracker
+							totalIntervals={intervals}
+							currentInterval={currentInterval}
+							curentState={currentState}
+						/>
+					</View>
 				</View>
 			</View>
-			<View className="absolute bottom-4 w-full px-10">
-				{timerState === "idle" ? (
-					<TouchableOpacity
-						onPress={start}
-						className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
-					>
-						<CirclePlay color="#000" />
-						<Text className="font-semibold">Start</Text>
-					</TouchableOpacity>
-				) : (
-					<View className="flex-col gap-y-1">
+			<View className="flex-row absolute bottom-6 w-full justify-center items-center px-10">
+				<View className="min-w-1">
+					{hasSessionStarted ? (
 						<TouchableOpacity
 							onPress={reset}
-							className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+							className="bg-slate-200 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 						>
-							<CircleStop color="#000" />
-							<Text className="font-semibold">Reset</Text>
+							<RotateCcw color="#374151" />
 						</TouchableOpacity>
+					) : null}
+				</View>
+				<View className="mx-auto">
+					{timerState === "running" ? (
+						<TouchableOpacity
+							onPress={pause}
+							className="bg-sky-700 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+						>
+							<Pause color="#f3f4f6" />
+							<Text className="font-semibold text-gray-100">Pause</Text>
+						</TouchableOpacity>
+					) : timerState === "paused" ? (
+						<TouchableOpacity
+							onPress={resume}
+							className="bg-sky-700 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+						>
+							<Play color="#f3f4f6" />
+							<Text className="font-semibold text-gray-100">Resume</Text>
+						</TouchableOpacity>
+					) : timerState == "idle" ? (
+						<TouchableOpacity
+							onPress={start}
+							className="bg-sky-700 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+						>
+							<Play color="#f3f4f6" />
+							<Text className="font-semibold text-gray-100">Start</Text>
+						</TouchableOpacity>
+					) : null}
+				</View>
+				<View className="min-w-1">
+					{hasSessionStarted ? (
 						<TouchableOpacity
 							onPress={skip}
-							className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
+							className="bg-slate-200 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
 						>
-							<CircleStop color="#000" />
-							<Text className="font-semibold">Skip</Text>
+							<SkipForward color="#374151" />
 						</TouchableOpacity>
-						{timerState === "running" ? (
-							<TouchableOpacity
-								onPress={pause}
-								className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
-							>
-								<CirclePause color="#000" />
-								<Text className="font-semibold">Pause</Text>
-							</TouchableOpacity>
-						) : (
-							<TouchableOpacity
-								onPress={resume}
-								className="bg-sky-500 p-4 rounded-md flex-row gap-x-1 items-center justify-center"
-							>
-								<CirclePlay color="#000" />
-								<Text className="font-semibold">Resume</Text>
-							</TouchableOpacity>
-						)}
-					</View>
-				)}
+					) : null}
+				</View>
 			</View>
 		</SafeAreaView>
 	);
