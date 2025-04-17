@@ -58,18 +58,10 @@ export default function Index() {
 	const duration = useTimerStore((state) => state.duration);
 
 	const endTime = useMemo(() => {
-		console.log("calculating", { startTime, duration });
 		if (startTime && duration) {
 			const start = new Date(startTime).getTime();
 			const durationMs = duration * 60 * 1000;
 			const end = start + durationMs;
-			console.log(
-				"end: ",
-				new Date(end).toLocaleTimeString(undefined, {
-					timeStyle: "medium",
-					hour12: false,
-				})
-			);
 			return new Date(end).toLocaleTimeString(undefined, {
 				timeStyle: "medium",
 				hour12: false,

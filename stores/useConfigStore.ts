@@ -1,14 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export interface PomodoroPattern {
-	focusTime: number;
-	shortBreakTime: number;
-	longBreakTime: number;
-	intervals: number;
-	autoStartBreak: boolean;
-}
-
 interface State {
 	focusTime: number;
 	shortBreakTime: number;
@@ -16,7 +8,6 @@ interface State {
 	intervals: number;
 	autoStartBreak: boolean;
 }
-
 interface Actions {
 	setPomodoroPattern: (pattern: State) => void;
 }

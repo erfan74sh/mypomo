@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import React, { useRef } from "react";
 import { formatTime } from "@/utils/formatTime";
 
 interface TimerProps {

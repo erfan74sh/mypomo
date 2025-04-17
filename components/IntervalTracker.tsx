@@ -1,5 +1,5 @@
-import { View, Text } from "react-native";
-import React, { Fragment } from "react";
+import { View } from "react-native";
+import { Fragment } from "react";
 
 interface Props {
 	totalIntervals: number;

@@ -1,5 +1,5 @@
-import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
+import * as Notifications from "expo-notifications";
 import * as Linking from "expo-linking";
 
 Notifications.setNotificationHandler({

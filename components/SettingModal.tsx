@@ -1,26 +1,19 @@
+import { useState } from "react";
 import {
 	View,
 	Text,
 	Modal,
 	TextInput,
-	Button,
 	Switch,
 	TouchableOpacity,
 } from "react-native";
-import React from "react";
 import useConfigStore from "@/stores/useConfigStore";
-import { PomodoroPattern } from "@/stores/useConfigStore";
 interface SettingModalProps {
 	visible: boolean;
 	onRequestClose: () => void;
-	children?: any;
 }
 
-const SettingModal = ({
-	visible,
-	onRequestClose,
-	children,
-}: SettingModalProps) => {
+const SettingModal = ({ visible, onRequestClose }: SettingModalProps) => {
 	const focusTime = useConfigStore((state) => state.focusTime);
 	const shortBreakTime = useConfigStore((state) => state.shortBreakTime);
 	const longBreakTime = useConfigStore((state) => state.longBreakTime);
@@ -30,7 +23,7 @@ const SettingModal = ({
 		(state) => state.setPomodoroPattern
 	);
 
-	const [pomodoroPatternInput, setPomodoroPatternInput] = React.useState({
+	const [pomodoroPatternInput, setPomodoroPatternInput] = useState({
 		focusTime: focusTime / 60,
 		shortBreakTime: shortBreakTime / 60,
 		longBreakTime: longBreakTime / 60,
@@ -80,7 +73,6 @@ const SettingModal = ({
 							<TextInput
 								className="inline-inputs"
 								keyboardType="numeric"
-								// placeholder="Focus time"
 								value={pomodoroPatternInput.focusTime.toString()}
 								onChangeText={(text) =>
 									setPomodoroPatternInput((prevPattern) => ({

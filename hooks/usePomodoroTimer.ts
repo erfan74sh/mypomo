@@ -1,5 +1,5 @@
-import { View, Text, Vibration } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Vibration } from "react-native";
 import useConfigStore from "@/stores/useConfigStore";
 import { useTimerStore } from "@/stores/timerStore";
 import {
@@ -11,7 +11,7 @@ type TimerState = "idle" | "running" | "paused";
 type PomodoroPhase = "focus" | "shortBreak" | "longBreak";
 
 const usePomodoroTimer = () => {
-	const [remainingTime, setRemainingTime] = React.useState(0);
+	const [remainingTime, setRemainingTime] = useState(0);
 	const [currentInterval, setCurrentInterval] = useState(1);
 	const [currentState, setCurrentState] = useState<PomodoroPhase>("focus");
 	const [timerState, setTimerState] = useState<TimerState>("idle");
@@ -25,8 +25,7 @@ const usePomodoroTimer = () => {
 	const intervals = useConfigStore((store) => store.intervals);
 	const autoStartBreak = useConfigStore((store) => store.autoStartBreak);
 
-	const { startTime, duration, notificationId, setTimer, clearTimer } =
-		useTimerStore();
+	const { notificationId, setTimer, clearTimer } = useTimerStore();
 
 	// Set duaration based on pomodoroPhase
 	const resetDuration = () => {
