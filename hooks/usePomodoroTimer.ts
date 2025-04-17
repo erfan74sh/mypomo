@@ -19,7 +19,11 @@ const usePomodoroTimer = () => {
 
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	const pomodoroPattern = useConfigStore((store) => store.pomodoroPattern);
+	const focusTime = useConfigStore((store) => store.focusTime);
+	const shortBreakTime = useConfigStore((store) => store.shortBreakTime);
+	const longBreakTime = useConfigStore((store) => store.longBreakTime);
+	const intervals = useConfigStore((store) => store.intervals);
+	const autoStartBreak = useConfigStore((store) => store.autoStartBreak);
 
 	const { startTime, duration, notificationId, setTimer, clearTimer } =
 		useTimerStore();
@@ -27,9 +31,9 @@ const usePomodoroTimer = () => {
 	// Set duaration based on pomodoroPhase
 	const resetDuration = () => {
 		const timeMap = {
-			focus: pomodoroPattern.focusTime,
-			shortBreak: pomodoroPattern.shortBreakTime,
-			longBreak: pomodoroPattern.longBreakTime,
+			focus: focusTime,
+			shortBreak: shortBreakTime,
+			longBreak: longBreakTime,
 		};
 		setRemainingTime(Number(timeMap[currentState]));
 	};
@@ -37,7 +41,6 @@ const usePomodoroTimer = () => {
 	// Start Timer
 	const start = async () => {
 		if (timerRef.current) clearInterval(timerRef.current);
-
 		setTimerState("running");
 		const now = new Date();
 		const end = new Date(now.getTime() + remainingTime * 1000);
@@ -130,7 +133,7 @@ const usePomodoroTimer = () => {
 
 	const goToNextPhase = () => {
 		if (currentState === "focus") {
-			if (currentInterval >= pomodoroPattern.intervals) {
+			if (currentInterval >= intervals) {
 				setCurrentState("longBreak");
 			} else {
 				setCurrentState("shortBreak");
@@ -147,7 +150,20 @@ const usePomodoroTimer = () => {
 	// On state Change, reset duration
 	useEffect(() => {
 		resetDuration();
-	}, [currentState, pomodoroPattern]);
+	}, [currentState, focusTime, shortBreakTime, longBreakTime]);
+
+	useEffect(() => {
+		(async () => {
+			if (
+				autoStartBreak &&
+				currentState !== "focus" &&
+				timerState === "idle" &&
+				remainingTime > 0
+			) {
+				await start();
+			}
+		})();
+	}, [currentState, remainingTime, timerState]);
 
 	const startNextCycle = async () => {
 		setCurrentInterval(1);
