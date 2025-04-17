@@ -41,23 +41,23 @@ const IntervalTracker = ({
 					<View
 						className={`w-6 h-6 rounded-full border-2 ${
 							generateTrackerState(index + 1, 0) === "finished"
-								? "bg-sky-500"
+								? "bg-sky-700"
 								: "bg-gray-300"
 						} ${
 							generateTrackerState(index + 1, 0) === "none"
 								? "border-gray-300"
-								: "border-sky-500"
+								: "border-sky-700"
 						}`}
 					/>
 					<View
 						className={`w-3 h-3 rounded-full border-2 ${
 							generateTrackerState(index + 1, 1) === "finished"
-								? "bg-sky-500"
+								? "bg-sky-700"
 								: "bg-gray-300"
 						} ${
 							generateTrackerState(index + 1, 1) === "none"
 								? "border-gray-300"
-								: "border-sky-500"
+								: "border-sky-700"
 						}`}
 					/>
 				</Fragment>

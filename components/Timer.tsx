@@ -9,10 +9,14 @@ interface TimerProps {
 const Timer = ({ remainingTime }: TimerProps) => {
 	const [minutes, seconds] = formatTime(remainingTime);
 	return (
-		<View className="flex-row items-center justify-center gap-x-2">
-			<Text className="text-7xl font-bold ">{minutes}</Text>
-			<Text className="text-2xl font-bold">:</Text>
-			<Text className="text-7xl font-bold ">{seconds}</Text>
+		<View className="flex-row items-center justify-center gap-x-2 ">
+			<Text className="text-8xl font-black text-sky-700  leading-[96px]">
+				{minutes}
+			</Text>
+			<Text className="text-6xl font-black text-sky-700 leading-[96px]">:</Text>
+			<Text className="text-8xl font-black text-sky-700 leading-[96px]">
+				{seconds}
+			</Text>
 		</View>
 	);
 };

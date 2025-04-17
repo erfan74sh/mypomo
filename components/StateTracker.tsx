@@ -9,21 +9,31 @@ export default function StateTracker({
 	const getStateText = () => {
 		switch (currentState) {
 			case "focus":
-				return "Focus Time";
+				return {
+					title: "Time to Focus:",
+					subTitle: "Dive deep into your work.",
+				};
 			case "shortBreak":
-				return "Short Break";
+				return {
+					title: "Break Time:",
+					subTitle: "A quick rest can boost your focus.",
+				};
 			case "longBreak":
-				return "Long Break";
+				return {
+					title: "Time to Relax:",
+					subTitle: "Great job—enjoy a well-deserved rest!",
+				};
 			default:
-				return "Unknown";
+				return { title: "", subTitle: "" };
 		}
 	};
 
 	return (
-		<View>
-			<Text className="bg-sky-500 px-2 py-1.5 rounded-md text-center align-middle">
-				{getStateText()}
+		<View className="flex-col items-center justify-center gap-y-1">
+			<Text className="text-sky-700 font-bold text-xl">
+				{getStateText().title}
 			</Text>
+			<Text className="text-gray-600">{getStateText().subTitle}</Text>
 		</View>
 	);
 }
