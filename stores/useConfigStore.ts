@@ -6,28 +6,31 @@ export interface PomodoroPattern {
 	shortBreakTime: number;
 	longBreakTime: number;
 	intervals: number;
+	autoStartBreak: boolean;
 }
 
 interface State {
-	pomodoroPattern: PomodoroPattern;
+	focusTime: number;
+	shortBreakTime: number;
+	longBreakTime: number;
+	intervals: number;
+	autoStartBreak: boolean;
 }
 
 interface Actions {
-	setPomodoroPattern: (pattern: PomodoroPattern) => void;
+	setPomodoroPattern: (pattern: State) => void;
 }
 
 const useConfigStore = create<State & Actions>()(
 	persist(
 		(set) => ({
-			pomodoroPattern: {
-				focusTime: 25 * 60,
-				shortBreakTime: 5 * 60,
-				longBreakTime: 15 * 60,
-				intervals: 3,
-			},
+			focusTime: 25 * 60,
+			shortBreakTime: 5 * 60,
+			longBreakTime: 15 * 60,
+			intervals: 3,
+			autoStartBreak: false,
 
-			setPomodoroPattern: (pattern: PomodoroPattern) =>
-				set({ pomodoroPattern: { ...pattern } }),
+			setPomodoroPattern: (config) => set({ ...config }),
 		}),
 		{
 			name: "pomodoro-pattern-storage",
